@@ -17,7 +17,7 @@ import (
 
 	"github.com/bitly/go-simplejson"
 
-	"github.com/adshao/go-binance/v2/common"
+	"github.com/freqai/go-binance/v2/common"
 )
 
 // SideType define side type of order
@@ -358,6 +358,57 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		return nil, &http.Header{}, apiErr
 	}
 	return data, &res.Header, nil
+}
+
+func (c *Client) callPUTAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+	err = c.parseRequest(r, opts...)
+	if err != nil {
+		return []byte{}, &http.Header{}, err
+	}
+	req, err := http.NewRequest(r.method, r.fullURL, r.body)
+	if err != nil {
+		return []byte{}, &http.Header{}, err
+	}
+	req = req.WithContext(ctx)
+	req.Header = r.header
+	c.debug("request: %#v", req)
+	f := c.do
+	if f == nil {
+		f = c.HTTPClient.Do
+	}
+	res, err := f(req)
+	if err != nil {
+		return []byte{}, &http.Header{}, err
+	}
+	//data, err = ioutil.ReadAll(res.Body)
+	//if err != nil {
+	//	return []byte{}, &http.Header{}, err
+	//}
+
+	res.Body.Close()
+	/*
+		defer func() {
+			cerr := res.Body.Close()
+			// Only overwrite the retured error if the original error was nil and an
+			// error occurred while closing the body.
+			if err == nil && cerr != nil {
+				err = cerr
+			}
+		}()*/
+
+	//c.debug("response: %#v", res)
+	//c.debug("response body: %s", string(data))
+	//c.debug("response status code: %d", res.StatusCode)
+	/*
+		if res.StatusCode >= http.StatusBadRequest {
+			apiErr := new(common.APIError)
+			e := json.Unmarshal(data, apiErr)
+			if e != nil {
+				c.debug("failed to unmarshal json: %s", e)
+			}
+			return nil, &http.Header{}, apiErr
+		}*/
+	return []byte{}, &http.Header{}, err
 }
 
 // SetApiEndpoint set api Endpoint

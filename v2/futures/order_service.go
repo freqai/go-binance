@@ -873,7 +873,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 
 	r.setFormParams(m)
 
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callPUTAPI(ctx, r, opts...)
 
 	if err != nil {
 		return &CreateBatchOrdersResponse{}, err
