@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -539,6 +540,73 @@ type CancelOrderResponse struct {
 	OrigType         string           `json:"origType"`
 	PositionSide     PositionSideType `json:"positionSide"`
 	PriceProtect     bool             `json:"priceProtect"`
+}
+
+// CancelBatchOrderService cancel an order
+type CancelBatchOrderService struct {
+	c                     *Client
+	symbol                string
+	orderIdList           []*int64
+	origClientOrderIdList []*string
+}
+
+// Symbol set symbol
+func (s *CancelBatchOrderService) Symbol(symbol string) *CancelBatchOrderService {
+	s.symbol = symbol
+	return s
+}
+
+// OrderID set orderID
+func (s *CancelBatchOrderService) OrderIdList(orderIdList int64) *CancelBatchOrderService {
+	s.orderIdList = append(s.orderIdList, &orderIdList)
+	return s
+}
+
+// OrigClientOrderID set origClientOrderID
+func (s *CancelBatchOrderService) OrigClientOrderIdList(origClientOrderIdList string) *CancelBatchOrderService {
+	s.origClientOrderIdList = append(s.origClientOrderIdList, &origClientOrderIdList)
+	return s
+}
+
+// Do send request
+func (s *CancelBatchOrderService) Do(ctx context.Context, opts ...RequestOption) (err error) {
+	r := &request{
+		method:   http.MethodDelete,
+		endpoint: "/fapi/v1/batchOrders",
+		secType:  secTypeSigned,
+	}
+	r.setFormParam("symbol", s.symbol)
+	if s.orderIdList != nil {
+		orderidstr := "["
+		for _, orderid := range s.orderIdList {
+			if orderidstr == "[" {
+				orderidstr = orderidstr + strconv.FormatInt(*orderid, 10)
+
+			} else {
+				orderidstr = orderidstr + "," + strconv.FormatInt(*orderid, 10)
+			}
+		}
+		orderidstr = "]"
+		r.setFormParam("orderIdList", orderidstr)
+	}
+	if s.origClientOrderIdList != nil {
+
+		clientorderidstr := "["
+		for _, clientorderid := range s.origClientOrderIdList {
+			if clientorderidstr == "[" {
+				clientorderidstr = clientorderidstr + "\"" + *clientorderid + "\""
+
+			} else {
+				clientorderidstr = clientorderidstr + ",\"" + *clientorderid + "\""
+			}
+		}
+		clientorderidstr = "]"
+
+		r.setFormParam("origClientOrderIdList", clientorderidstr)
+	}
+	s.c.callPUTAPI(ctx, r, opts...)
+
+	return nil
 }
 
 // CancelAllOpenOrdersService cancel all open orders
