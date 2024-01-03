@@ -80,6 +80,7 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 		lastResponse = time.Now()
 		return nil
 	})
+	c.SetPingHandler(nil)
 
 	go func() {
 		defer ticker.Stop()
