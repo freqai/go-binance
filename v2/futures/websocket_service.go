@@ -21,6 +21,8 @@ var (
 	WebsocketTimeout = time.Second * 60
 	// WebsocketKeepalive enables sending ping/pong messages to check the connection stability
 	WebsocketKeepalive = false
+
+	WebsocketKeepapong = false
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
 )
