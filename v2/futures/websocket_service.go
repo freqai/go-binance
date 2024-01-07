@@ -689,7 +689,8 @@ func WsPartialDepthServeWithRate(symbol string, levels int, rate time.Duration, 
 
 // WsDiffDepthServe serve websocket diff. depth handler.
 func WsDiffDepthServe(symbol string, handler WsDepthHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	return wsDepthServe(symbol, "", nil, handler, errHandler)
+	var rate time.Duration = 100 * time.Millisecond
+	return wsDepthServe(symbol, "", &rate, handler, errHandler)
 }
 
 // WsCombinedDepthServe is similar to WsPartialDepthServe, but it for multiple symbols
